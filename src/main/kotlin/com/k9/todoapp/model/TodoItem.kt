@@ -16,7 +16,7 @@ open class TodoItem(
     open var taskName: String? = null,
 
     @Column(name = "is_finished")
-    open var isFinished: Boolean? = null,
+    open var isFinished: Boolean = false,
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date")
@@ -27,7 +27,7 @@ open class TodoItem(
     open var updatedDate: Date? = null,
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_date")
+    @Column(name = "deleted_date")
     open var deletedDate: Date? = null
 ) {
 }

@@ -5,5 +5,5 @@ import java.io.Serializable
 data class TodoItemDto(
     var id: Long? = null,
     var taskName: String? = null,
-    var isFinished: Boolean? = null
+    var isFinished: Boolean = false
 ) : Serializable
