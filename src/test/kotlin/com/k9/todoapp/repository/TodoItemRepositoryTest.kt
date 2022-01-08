@@ -3,28 +3,32 @@ package com.k9.todoapp.repository
 import com.k9.todoapp.model.TodoItem
 import com.k9.todoapp.util.PageableUtil
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import java.util.*
 
-@ExtendWith(SpringExtension::class)
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class TodoItemRepositoryTest {
     @Autowired
     private lateinit var todoItemRepository: TodoItemRepository
 
-    @BeforeAll
+    @Autowired
+    private lateinit var testEntityManager: TestEntityManager
+
+    @BeforeEach
     fun initTodoItemData() {
         val deletedTodoItem = TodoItem(taskName = "Task 1", deletedDate = Date())
-        todoItemRepository.save(deletedTodoItem)
+        testEntityManager.persist(deletedTodoItem)
         val newTodoItem = TodoItem(taskName = "Task 2", createdDate = Date())
-        todoItemRepository.save(newTodoItem)
+        testEntityManager.persist(newTodoItem)
+        testEntityManager.flush()
     }
+
 
     @Test
     fun `get all todoItems that not deleted`() {
@@ -41,15 +45,17 @@ class TodoItemRepositoryTest {
         val todoItem = optionalTodoItem[0]
         assertThat(todoItem).hasNoNullFieldsOrPropertiesExcept("deletedDate", "updatedDate")
         assertThat(todoItem.createdDate).isNotNull
+        assertThat(todoItem.createdDate).isInstanceOf(Date::class.java)
         assertThat(todoItem.deletedDate).isNull()
     }
 
     @Test
     fun `get todoItem by id that not deleted`() {
-        val optionalTodoItem = todoItemRepository.findByIdAndDeletedDateIsNull(2L)
+        val optionalTodoItem = todoItemRepository.findByIdAndDeletedDateIsNull(4L)
         assertThat(optionalTodoItem).isNotEmpty
         val todoItem = optionalTodoItem.get()
         assertThat(todoItem.createdDate).isNotNull
+        assertThat(todoItem.createdDate).isInstanceOf(Date::class.java)
         assertThat(todoItem.deletedDate).isNull()
     }
 }

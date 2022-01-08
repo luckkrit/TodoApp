@@ -74,7 +74,8 @@ internal class TodoItemServiceTest {
         verify(exactly = 1) { todoItemRepository.findByIdAndDeletedDateIsNull(1L) }
         verify(exactly = 1) { todoItemRepository.save(any()) }
         assertThat(optionalTodoItemDto).isPresent.get().hasFieldOrPropertyWithValue("id", 1L)
-            .hasFieldOrPropertyWithValue("taskName", "Update Task 1").hasFieldOrPropertyWithValue("isFinished", false)
+            .hasFieldOrPropertyWithValue("taskName", "Update Task 1")
+            .hasFieldOrPropertyWithValue("isFinished", false)
     }
 
     @Test
