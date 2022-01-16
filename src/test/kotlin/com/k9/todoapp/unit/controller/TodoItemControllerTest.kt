@@ -2,6 +2,7 @@ package com.k9.todoapp.unit.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.k9.todoapp.model.TodoItem
+import com.k9.todoapp.model.TodoItemDto
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -33,10 +34,10 @@ internal class TodoItemControllerTest {
 
     @Test
     fun `add todo item and get it`() {
-        val todoItem = TodoItem(id = 1, taskName = "Task 1")
+        val todoItemDto = TodoItemDto(id = 1, taskName = "Task 1")
         val performPost = mockMvc.post("/todos") {
             contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(todoItem)
+            content = objectMapper.writeValueAsString(todoItemDto)
         }
         performPost.andDo { print() }.andExpect {
             status {
@@ -44,15 +45,15 @@ internal class TodoItemControllerTest {
             }
         }
 
-        mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
+        mockMvc.get("/todos/${todoItemDto.id}").andDo { print() }.andExpect {
             content {
                 contentType(MediaType.APPLICATION_JSON)
             }
             status {
                 isOk()
             }
-            jsonPath("$.id") { value(todoItem.id) }
-            jsonPath("$.taskName") { value(todoItem.taskName) }
+            jsonPath("$.id") { value(todoItemDto.id) }
+            jsonPath("$.taskName") { value(todoItemDto.taskName) }
         }
     }
 
