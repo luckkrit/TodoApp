@@ -1,7 +1,8 @@
-package com.k9.todoapp.util
+package com.k9.todoapp.unit.util
 
 import com.k9.todoapp.model.TodoItem
 import com.k9.todoapp.model.TodoItemDto
+import com.k9.todoapp.util.TodoItemUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.modelmapper.ModelMapper

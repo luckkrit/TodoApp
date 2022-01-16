@@ -1,6 +1,7 @@
-package com.k9.todoapp.repository
+package com.k9.todoapp.unit.repository
 
 import com.k9.todoapp.model.TodoItem
+import com.k9.todoapp.repository.TodoItemRepository
 import com.k9.todoapp.util.PageableUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

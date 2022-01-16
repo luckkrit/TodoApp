@@ -1,8 +1,9 @@
-package com.k9.todoapp.service
+package com.k9.todoapp.unit.service
 
 import com.k9.todoapp.model.TodoItem
 import com.k9.todoapp.model.TodoItemDto
 import com.k9.todoapp.repository.TodoItemRepository
+import com.k9.todoapp.service.TodoItemService
 import com.k9.todoapp.util.PageableUtil
 import io.mockk.every
 import io.mockk.mockk

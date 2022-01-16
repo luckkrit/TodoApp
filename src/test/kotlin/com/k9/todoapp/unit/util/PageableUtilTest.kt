@@ -1,5 +1,6 @@
-package com.k9.todoapp.util
+package com.k9.todoapp.unit.util
 
+import com.k9.todoapp.util.PageableUtil
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -21,6 +22,7 @@ internal class PageableUtilTest {
             Optional.empty()
         )
         verify(exactly = 1) {
+
             spyPageableUtil.getPageable(
                 Optional.empty(),
                 Optional.empty(),
