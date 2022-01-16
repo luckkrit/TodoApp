@@ -14,7 +14,7 @@ object PageableUtil {
         optionalSortBy: Optional<String>
     ): Pageable {
         val offset = if (optionalPage.isPresent) optionalPage.get() else 0
-        val total = if (optionalTotal.isPresent) optionalTotal.get() else 5
+        val total = if (optionalTotal.isPresent && optionalTotal.get() > 0) optionalTotal.get() else 5
         val limit = if (optionalLimit.isPresent) optionalLimit.get() else total
         val direction = if (optionalSort.isPresent) optionalSort.get() else Sort.Direction.ASC
         val sortBy = if (optionalSortBy.isPresent) optionalSortBy.get() else "id"

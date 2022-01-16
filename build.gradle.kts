@@ -36,8 +36,8 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    testImplementation("org.assertj:assertj-core:3.21.0")
-    testImplementation("io.mockk:mockk:1.12.1")
+    testImplementation("org.assertj:assertj-core:3.22.0")
+    testImplementation("io.mockk:mockk:1.12.2")
 }
 
 tasks.withType<KotlinCompile> {
