@@ -20,6 +20,7 @@ class TodoItemRepositoryTest {
     @Autowired
     private lateinit var testEntityManager: TestEntityManager
 
+
     @BeforeEach
     fun initTodoItemData() {
         val deletedTodoItem = TodoItem(taskName = "Task 1", deletedDate = Date())

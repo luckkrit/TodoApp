@@ -1,9 +1,11 @@
 package com.k9.todoapp.service
 
+import com.k9.todoapp.model.TodoItemCollectionDto
 import com.k9.todoapp.model.TodoItemDto
 import com.k9.todoapp.repository.TodoItemRepository
 import com.k9.todoapp.util.PageableUtil
 import com.k9.todoapp.util.TodoItemUtil
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.util.*
@@ -15,7 +17,7 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         optionalLimit: Optional<Int> = Optional.of(5),
         optionalSort: Optional<Sort.Direction> = Optional.of(Sort.Direction.ASC),
         optionalSortBy: Optional<String> = Optional.of("id")
-    ): Optional<List<TodoItemDto>> {
+    ): Optional<TodoItemCollectionDto> {
         val pageable = PageableUtil.getPageable(
             optionalPage,
             optionalLimit,
@@ -23,7 +25,15 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
             Optional.of(todoItemRepository.count().toInt()),
             optionalSortBy
         )
-        return Optional.of(todoItemRepository.findByDeletedDateIsNull(pageable).map(TodoItemUtil::convertToDto).content)
+        val results = todoItemRepository.findByDeletedDateIsNull(pageable).map(TodoItemUtil::convertToDto).content
+        val page = PageImpl(results, pageable, todoItemRepository.count())
+        return Optional.of(
+            TodoItemCollectionDto(
+                count = page.numberOfElements,
+                totalPages = page.totalPages,
+                page.content
+            )
+        )
     }
 
     fun getTodoItem(todoItemId: Long): Optional<TodoItemDto> {

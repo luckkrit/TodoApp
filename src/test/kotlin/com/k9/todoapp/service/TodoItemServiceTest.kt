@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.data.domain.PageImpl
 import java.util.*
 
 internal class TodoItemServiceTest {
@@ -28,11 +29,43 @@ internal class TodoItemServiceTest {
         )
         every { todoItemRepository.findByDeletedDateIsNull(pageable).content } returns emptyList<TodoItem>()
 
-        val optionalTodoItemsDto = todoItemService.getAllTodoItems()
+        val optionalTodoCollectionDto = todoItemService.getAllTodoItems()
 
         verify(exactly = 1) { todoItemRepository.findByDeletedDateIsNull(pageable) }
-        assertThat(optionalTodoItemsDto).isNotEmpty
-        assertThat(optionalTodoItemsDto.get()).hasSize(0)
+        assertThat(optionalTodoCollectionDto).isNotEmpty
+        val todoItemCollectionDto = optionalTodoCollectionDto.get()
+        assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("count", 0)
+        assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("totalPages", 0)
+        val results = todoItemCollectionDto.results
+        assertThat(results).hasSize(0)
+    }
+
+    @Test
+    fun `get all 5 todo items`() {
+        val pageable = PageableUtil.getPageable(
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        )
+        val todoItems = listOf(
+            TodoItem(id = 1, taskName = "Task 1", createdDate = Date()),
+            TodoItem(id = 2, taskName = "Task 2", createdDate = Date()),
+            TodoItem(id = 3, taskName = "Task 3", createdDate = Date()),
+            TodoItem(id = 4, taskName = "Task 4", createdDate = Date()),
+            TodoItem(id = 5, taskName = "Task 5", createdDate = Date()),
+        )
+        every { todoItemRepository.findByDeletedDateIsNull(pageable) } returns PageImpl(todoItems)
+
+        val optionalTodoCollectionDto = todoItemService.getAllTodoItems()
+        verify(exactly = 1) { todoItemRepository.findByDeletedDateIsNull(pageable) }
+        assertThat(optionalTodoCollectionDto).isNotEmpty
+        val todoItemCollectionDto = optionalTodoCollectionDto.get()
+        assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("count", 5)
+        assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("totalPages", 1)
+        val results = todoItemCollectionDto.results
+        assertThat(results).hasSize(5)
     }
 
     @Test
