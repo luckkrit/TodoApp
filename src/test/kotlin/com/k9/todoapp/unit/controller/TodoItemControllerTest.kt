@@ -45,6 +45,18 @@ internal class TodoItemControllerTest {
     }
 
     @Test
+    fun `get all empty todo items sort by desc`() {
+        mockMvc.get("/todos?sort=desc").andExpect {
+            content {
+                contentType(MediaType.APPLICATION_JSON)
+            }
+            status {
+                isOk()
+            }
+        }
+    }
+
+    @Test
     fun `add invalid todo item and get it`() {
         val todoItem = TodoItem(id = 1, taskName = "")
         val performPost = mockMvc.post("/todos") {

@@ -29,11 +29,13 @@ class TodoItemController(
         @RequestParam("sortby") optionalSortBy: Optional<String>
     ): ResponseEntity<TodoItemCollectionDto> {
         val sort =
-            if (optionalSort.isPresent && optionalSort.get().uppercase() == "ASC") Optional.of(
-                Sort.Direction.valueOf(
-                    optionalSort.get().uppercase()
-                )
-            ) else Optional.of(Sort.Direction.ASC)
+            if (optionalSort.isPresent)
+                if (optionalSort.get().uppercase() == "ASC")
+                    Optional.of(
+                        Sort.Direction.ASC
+                    )
+                else Optional.of(Sort.Direction.DESC)
+            else Optional.of(Sort.Direction.ASC)
         val todoItemCollectionDto = todoItemService.getAllTodoItems(optionalPage, optionalLimit, sort, optionalSortBy)
         return ResponseEntity.ok(todoItemCollectionDto)
     }
