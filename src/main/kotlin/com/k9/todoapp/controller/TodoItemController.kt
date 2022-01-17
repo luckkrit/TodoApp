@@ -35,8 +35,7 @@ class TodoItemController(
                 )
             ) else Optional.of(Sort.Direction.ASC)
         val todoItemCollectionDto = todoItemService.getAllTodoItems(optionalPage, optionalLimit, sort, optionalSortBy)
-        return if (todoItemCollectionDto.isPresent) ResponseEntity.ok(todoItemCollectionDto.get()) else ResponseEntity.notFound()
-            .build()
+        return ResponseEntity.ok(todoItemCollectionDto)
     }
 
     @GetMapping("/{id}")
@@ -48,9 +47,8 @@ class TodoItemController(
 
     @PostMapping
     fun postTodoItem(@Valid @RequestBody todoItemDto: TodoItemDto): ResponseEntity<Any> {
-        val optionalTodoItemDto = todoItemService.addTodoItem(todoItemDto)
-        return if (optionalTodoItemDto.isPresent) ResponseEntity.created(URI.create("/todos/${optionalTodoItemDto.get().id}"))
-            .build() else ResponseEntity.badRequest()
+        val savedTodoItemDto = todoItemService.addTodoItem(todoItemDto)
+        return ResponseEntity.created(URI.create("/todos/${savedTodoItemDto.id}"))
             .build()
     }
 

@@ -30,11 +30,10 @@ internal class TodoItemServiceTest {
         )
         every { todoItemRepository.findByDeletedDateIsNull(pageable).content } returns emptyList<TodoItem>()
 
-        val optionalTodoCollectionDto = todoItemService.getAllTodoItems()
+        val todoItemCollectionDto = todoItemService.getAllTodoItems()
 
         verify(exactly = 1) { todoItemRepository.findByDeletedDateIsNull(pageable) }
-        assertThat(optionalTodoCollectionDto).isNotEmpty
-        val todoItemCollectionDto = optionalTodoCollectionDto.get()
+        assertThat(todoItemCollectionDto).isNotNull
         assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("count", 0)
         assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("totalPages", 0)
         val results = todoItemCollectionDto.results
@@ -59,10 +58,9 @@ internal class TodoItemServiceTest {
         )
         every { todoItemRepository.findByDeletedDateIsNull(pageable) } returns PageImpl(todoItems)
 
-        val optionalTodoCollectionDto = todoItemService.getAllTodoItems()
+        val todoItemCollectionDto = todoItemService.getAllTodoItems()
         verify(exactly = 1) { todoItemRepository.findByDeletedDateIsNull(pageable) }
-        assertThat(optionalTodoCollectionDto).isNotEmpty
-        val todoItemCollectionDto = optionalTodoCollectionDto.get()
+        assertThat(todoItemCollectionDto).isNotNull
         assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("count", 5)
         assertThat(todoItemCollectionDto).hasFieldOrPropertyWithValue("totalPages", 1)
         val results = todoItemCollectionDto.results
@@ -92,9 +90,9 @@ internal class TodoItemServiceTest {
         val todoItem = TodoItem(id = 1L, taskName = "Task 1", createdDate = Date(), isFinished = false)
         val todoItemDto = TodoItemDto(taskName = "Task 1", isFinished = false)
         every { todoItemRepository.save(any()) } returns todoItem
-        val optionalTodoItemDto = todoItemService.addTodoItem(todoItemDto)
+        val savedTodoItemDto = todoItemService.addTodoItem(todoItemDto)
         verify(exactly = 1) { todoItemRepository.save(any()) }
-        assertThat(optionalTodoItemDto).isPresent.get().hasFieldOrPropertyWithValue("id", 1L)
+        assertThat(savedTodoItemDto).hasFieldOrPropertyWithValue("id", 1L)
             .hasFieldOrPropertyWithValue("taskName", "Task 1").hasFieldOrPropertyWithValue("isFinished", false)
     }
 
@@ -113,6 +111,15 @@ internal class TodoItemServiceTest {
     }
 
     @Test
+    fun `update unknown Todo`() {
+        val todoItemDto = TodoItemDto(taskName = "Update Task 1", isFinished = false)
+        every { todoItemRepository.findByIdAndDeletedDateIsNull(1L) } returns Optional.empty()
+        val optionalTodoItemDto = todoItemService.updateTodoItem(1L, todoItemDto)
+        verify(exactly = 1) { todoItemRepository.findByIdAndDeletedDateIsNull(1L) }
+        assertThat(optionalTodoItemDto).isEmpty
+    }
+
+    @Test
     fun `delete Todo`() {
         val todoItem = TodoItem(id = 1L, taskName = "Task 1", deletedDate = Date(), isFinished = false)
         every { todoItemRepository.findByIdAndDeletedDateIsNull(1L) } returns Optional.of(todoItem)
@@ -122,5 +129,13 @@ internal class TodoItemServiceTest {
         verify(exactly = 1) { todoItemRepository.save(any()) }
         assertThat(optionalTodoItemDto).isPresent.get().hasFieldOrPropertyWithValue("id", 1L)
             .hasFieldOrPropertyWithValue("taskName", "Task 1").hasFieldOrPropertyWithValue("isFinished", false)
+    }
+
+    @Test
+    fun `delete unknown Todo`() {
+        every { todoItemRepository.findByIdAndDeletedDateIsNull(1L) } returns Optional.empty()
+        val optionalTodoItemDto = todoItemService.deleteTodoItem(1L)
+        verify(exactly = 1) { todoItemRepository.findByIdAndDeletedDateIsNull(1L) }
+        assertThat(optionalTodoItemDto).isEmpty
     }
 }

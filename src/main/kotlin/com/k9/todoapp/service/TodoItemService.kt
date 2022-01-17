@@ -17,7 +17,7 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         optionalLimit: Optional<Int> = Optional.of(5),
         optionalSort: Optional<Sort.Direction> = Optional.of(Sort.Direction.ASC),
         optionalSortBy: Optional<String> = Optional.of("id")
-    ): Optional<TodoItemCollectionDto> {
+    ): TodoItemCollectionDto {
         val pageable = PageableUtil.getPageable(
             optionalPage,
             optionalLimit,
@@ -27,12 +27,10 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         )
         val results = todoItemRepository.findByDeletedDateIsNull(pageable).map(TodoItemUtil::convertToDto).content
         val page = PageImpl(results, pageable, todoItemRepository.count())
-        return Optional.of(
-            TodoItemCollectionDto(
-                count = page.numberOfElements,
-                totalPages = page.totalPages,
-                page.content
-            )
+        return TodoItemCollectionDto(
+            count = page.numberOfElements,
+            totalPages = page.totalPages,
+            page.content
         )
     }
 
@@ -43,11 +41,11 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         return if (optionalTodoItem.isPresent) Optional.of(TodoItemUtil.convertToDto(optionalTodoItem.get())) else Optional.empty()
     }
 
-    fun addTodoItem(todoItemDto: TodoItemDto): Optional<TodoItemDto> {
+    fun addTodoItem(todoItemDto: TodoItemDto): TodoItemDto {
         val todoItem = TodoItemUtil.convertToEntity(todoItemDto)
         todoItem.createdDate = Date()
         val savedTodoItem = todoItemRepository.save(todoItem)
-        return Optional.of(TodoItemUtil.convertToDto(savedTodoItem))
+        return TodoItemUtil.convertToDto(savedTodoItem)
     }
 
     fun updateTodoItem(todoItemId: Long, todoItemDto: TodoItemDto): Optional<TodoItemDto> {

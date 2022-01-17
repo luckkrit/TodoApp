@@ -2,12 +2,12 @@ package com.k9.todoapp.unit.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.k9.todoapp.model.TodoItem
-import com.k9.todoapp.model.TodoItemDto
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.*
 
 @SpringBootTest
@@ -33,11 +33,44 @@ internal class TodoItemControllerTest {
     }
 
     @Test
-    fun `add todo item and get it`() {
-        val todoItemDto = TodoItemDto(id = 1, taskName = "Task 1")
+    fun `get all empty todo items sort by asc`() {
+        mockMvc.get("/todos?sort=asc").andExpect {
+            content {
+                contentType(MediaType.APPLICATION_JSON)
+            }
+            status {
+                isOk()
+            }
+        }
+    }
+
+    @Test
+    fun `add invalid todo item and get it`() {
+        val todoItem = TodoItem(id = 1, taskName = "")
         val performPost = mockMvc.post("/todos") {
             contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(todoItemDto)
+            content = objectMapper.writeValueAsString(todoItem)
+        }
+        performPost.andDo { print() }.andExpect {
+            status {
+                isBadRequest()
+            }
+        }
+
+        mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
+            status {
+                isNotFound()
+            }
+        }
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    fun `add todo item and get it`() {
+        val todoItem = TodoItem(id = 1, taskName = "Task 1")
+        val performPost = mockMvc.post("/todos") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(todoItem)
         }
         performPost.andDo { print() }.andExpect {
             status {
@@ -45,18 +78,20 @@ internal class TodoItemControllerTest {
             }
         }
 
-        mockMvc.get("/todos/${todoItemDto.id}").andDo { print() }.andExpect {
+        mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
             content {
                 contentType(MediaType.APPLICATION_JSON)
             }
             status {
                 isOk()
             }
-            jsonPath("$.id") { value(todoItemDto.id) }
-            jsonPath("$.taskName") { value(todoItemDto.taskName) }
+            jsonPath("$.id") { value(todoItem.id) }
+            jsonPath("$.taskName") { value(todoItem.taskName) }
         }
     }
 
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     fun `add todo item`() {
         val todoItem = TodoItem(id = 1, taskName = "Task 1")
@@ -71,6 +106,7 @@ internal class TodoItemControllerTest {
         }
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     fun `add todo and put then check it`() {
         val todoItem = TodoItem(id = 1, taskName = "Task 1")
@@ -83,7 +119,6 @@ internal class TodoItemControllerTest {
                 isCreated()
             }
         }
-
         todoItem.taskName = "Update Task 1"
 
         val performPut = mockMvc.put("/todos/${todoItem.id}") {
@@ -99,16 +134,17 @@ internal class TodoItemControllerTest {
         mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
             status { isOk() }
             jsonPath("$.id") {
-                value("1")
+                value(todoItem.id)
             }
             jsonPath("$.taskName") {
-                value("Update Task 1")
+                value(todoItem.taskName)
             }
         }
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    fun `add todo and patch then check it`() {
+    fun `update unknown todo and put then check it`() {
         val todoItem = TodoItem(id = 1, taskName = "Task 1")
         val performPost = mockMvc.post("/todos") {
             contentType = MediaType.APPLICATION_JSON
@@ -119,10 +155,41 @@ internal class TodoItemControllerTest {
                 isCreated()
             }
         }
+        todoItem.id = 2
+        todoItem.taskName = "Update Task 2"
 
+        val performPut = mockMvc.put("/todos/${todoItem.id}") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(todoItem)
+        }
+        performPut.andDo { print() }.andExpect {
+            status {
+                isNotFound()
+            }
+        }
+
+        mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
+            status { isNotFound() }
+        }
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    fun `add todo and patch then check it`() {
+        val todoItem = TodoItem(id = 1, taskName = "Task 1")
+
+        val performPost = mockMvc.post("/todos") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(todoItem)
+        }
+        performPost.andDo { print() }.andExpect {
+            status {
+                isCreated()
+            }
+        }
         todoItem.taskName = "Update Task 1"
 
-        val performPatch = mockMvc.put("/todos/${todoItem.id}") {
+        val performPatch = mockMvc.patch("/todos/${todoItem.id}") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(todoItem)
         }
@@ -135,14 +202,47 @@ internal class TodoItemControllerTest {
         mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
             status { isOk() }
             jsonPath("$.id") {
-                value("1")
+                value(todoItem.id)
             }
             jsonPath("$.taskName") {
-                value("Update Task 1")
+                value(todoItem.taskName)
             }
         }
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    fun `update todo and patch then check it`() {
+        val todoItem = TodoItem(id = 1, taskName = "Task 1")
+
+        val performPost = mockMvc.post("/todos") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(todoItem)
+        }
+        performPost.andDo { print() }.andExpect {
+            status {
+                isCreated()
+            }
+        }
+        todoItem.id = 2
+        todoItem.taskName = "Update Task 2"
+
+        val performPatch = mockMvc.patch("/todos/${todoItem.id}") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(todoItem)
+        }
+        performPatch.andDo { print() }.andExpect {
+            status {
+                isNotFound()
+            }
+        }
+
+        mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
+            status { isNotFound() }
+        }
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     fun `add todo and delete then check it`() {
         val todoItem = TodoItem(id = 1, taskName = "Task 1")
@@ -155,11 +255,36 @@ internal class TodoItemControllerTest {
                 isCreated()
             }
         }
-
         val performDelete = mockMvc.delete("/todos/${todoItem.id}")
         performDelete.andDo { print() }.andExpect {
             status {
                 isOk()
+            }
+        }
+
+        mockMvc.get("/todos/${todoItem.id}").andDo { print() }.andExpect {
+            status { isNotFound() }
+        }
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    fun `add todo and delete unknown todo then check it`() {
+        val todoItem = TodoItem(id = 1, taskName = "Task 1")
+        val performPost = mockMvc.post("/todos") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(todoItem)
+        }
+        performPost.andDo { print() }.andExpect {
+            status {
+                isCreated()
+            }
+        }
+        todoItem.id = 2
+        val performDelete = mockMvc.delete("/todos/${todoItem.id}")
+        performDelete.andDo { print() }.andExpect {
+            status {
+                isNotFound()
             }
         }
 
