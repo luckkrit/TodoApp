@@ -1,5 +1,6 @@
 package com.k9.todoapp.service
 
+import com.k9.todoapp.model.TodoItem
 import com.k9.todoapp.model.TodoItemCollectionDto
 import com.k9.todoapp.model.TodoItemDto
 import com.k9.todoapp.repository.TodoItemRepository
@@ -42,19 +43,19 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
     }
 
     @Cacheable(value = ["TodoItemDto"], key = "#todoItemId", unless = "#result==null")
-    fun getTodoItem(todoItemId: Long): Optional<TodoItemDto> {
+    fun getTodoItem(todoItemId: Long): Optional<TodoItem> {
         logger.info("Get todo id = $todoItemId")
         val optionalTodoItem =
             todoItemRepository.findByIdAndDeletedDateIsNull(todoItemId)
                 .filter { todoItem -> todoItem.deletedDate == null }
-        return if (optionalTodoItem.isPresent) Optional.of(TodoItemUtil.convertToDto(optionalTodoItem.get())) else Optional.empty()
+        return if (optionalTodoItem.isPresent) Optional.of(optionalTodoItem.get()) else Optional.empty()
     }
 
-    fun addTodoItem(todoItemDto: TodoItemDto): TodoItemDto {
+    fun addTodoItem(todoItemDto: TodoItemDto): TodoItem {
         val todoItem = TodoItemUtil.convertToEntity(todoItemDto)
         todoItem.createdDate = Date()
         val savedTodoItem = todoItemRepository.save(todoItem)
-        return TodoItemUtil.convertToDto(savedTodoItem)
+        return savedTodoItem
     }
 
     @CachePut(value = ["TodoItemDto"], key = "#todoItemId")
@@ -74,14 +75,14 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
     }
 
     @CacheEvict(value = ["TodoItemDto"], allEntries = true)
-    fun deleteTodoItem(todoItemId: Long): Optional<TodoItemDto> {
+    fun deleteTodoItem(todoItemId: Long): Optional<TodoItem> {
         logger.info("Delete todo id = $todoItemId")
         val optionalTodoItem = todoItemRepository.findByIdAndDeletedDateIsNull(todoItemId)
         return if (optionalTodoItem.isPresent) {
             val todoItem = optionalTodoItem.get()
             todoItem.deletedDate = Date()
             val savedTodoItem = todoItemRepository.save(todoItem)
-            Optional.of(TodoItemUtil.convertToDto(savedTodoItem))
+            Optional.of(savedTodoItem)
         } else {
             Optional.empty()
         }

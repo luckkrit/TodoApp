@@ -3,6 +3,7 @@ package com.k9.todoapp.controller
 import com.k9.todoapp.model.TodoItemCollectionDto
 import com.k9.todoapp.model.TodoItemDto
 import com.k9.todoapp.service.TodoItemService
+import com.k9.todoapp.util.TodoItemUtil
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -42,8 +43,8 @@ class TodoItemController(
 
     @GetMapping("/{id}")
     fun getTodoItem(@PathVariable id: Long): ResponseEntity<TodoItemDto> {
-        val optionalTodoItemDto = todoItemService.getTodoItem(id)
-        return if (optionalTodoItemDto.isPresent) ResponseEntity.ok(optionalTodoItemDto.get()) else ResponseEntity.notFound()
+        val optionalTodoItem = todoItemService.getTodoItem(id)
+        return if (optionalTodoItem.isPresent) ResponseEntity.ok(TodoItemUtil.convertToDto(optionalTodoItem.get())) else ResponseEntity.notFound()
             .build()
     }
 
