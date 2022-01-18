@@ -5,6 +5,11 @@ import com.k9.todoapp.model.TodoItemDto
 import com.k9.todoapp.repository.TodoItemRepository
 import com.k9.todoapp.util.PageableUtil
 import com.k9.todoapp.util.TodoItemUtil
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -12,6 +17,8 @@ import java.util.*
 
 @Service
 class TodoItemService(private val todoItemRepository: TodoItemRepository) {
+    val logger: Logger = LoggerFactory.getLogger(TodoItemService::class.java)
+
     fun getAllTodoItems(
         optionalPage: Optional<Int> = Optional.of(0),
         optionalLimit: Optional<Int> = Optional.of(5),
@@ -34,7 +41,9 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         )
     }
 
+    @Cacheable(value = ["TodoItemDto"], key = "#todoItemId", unless = "#result==null")
     fun getTodoItem(todoItemId: Long): Optional<TodoItemDto> {
+        logger.info("Get todo id = $todoItemId")
         val optionalTodoItem =
             todoItemRepository.findByIdAndDeletedDateIsNull(todoItemId)
                 .filter { todoItem -> todoItem.deletedDate == null }
@@ -48,7 +57,9 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         return TodoItemUtil.convertToDto(savedTodoItem)
     }
 
+    @CachePut(value = ["TodoItemDto"], key = "#todoItemId")
     fun updateTodoItem(todoItemId: Long, todoItemDto: TodoItemDto): Optional<TodoItemDto> {
+        logger.info("Update todo id = $todoItemId")
         val optionalTodoItem = todoItemRepository.findByIdAndDeletedDateIsNull(todoItemId)
         return if (optionalTodoItem.isPresent) {
             val todoItem = optionalTodoItem.get()
@@ -62,7 +73,9 @@ class TodoItemService(private val todoItemRepository: TodoItemRepository) {
         }
     }
 
+    @CacheEvict(value = ["TodoItemDto"], allEntries = true)
     fun deleteTodoItem(todoItemId: Long): Optional<TodoItemDto> {
+        logger.info("Delete todo id = $todoItemId")
         val optionalTodoItem = todoItemRepository.findByIdAndDeletedDateIsNull(todoItemId)
         return if (optionalTodoItem.isPresent) {
             val todoItem = optionalTodoItem.get()

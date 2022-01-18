@@ -1,6 +1,12 @@
 version: "2"
 
 services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
   sonarqube:
     image: sonarqube
     ports:
@@ -37,3 +43,4 @@ volumes:
   sonarqube_extensions:
   postgresql:
   postgresql_data:
+  redis_data:

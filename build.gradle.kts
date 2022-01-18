@@ -4,10 +4,10 @@ plugins {
     id("org.springframework.boot") version "2.6.2"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("org.sonarqube") version "3.3"
+    id("jacoco")
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.spring") version "1.6.10"
     kotlin("plugin.jpa") version "1.6.10"
-    id("jacoco")
 }
 
 group = "com.k9"
@@ -31,6 +31,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("org.modelmapper:modelmapper:2.4.5")
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis:2.6.2")
+    implementation("org.springframework.boot:spring-boot-starter-cache:2.6.2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("mysql:mysql-connector-java")
